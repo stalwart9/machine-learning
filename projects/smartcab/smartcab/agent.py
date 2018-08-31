@@ -3,7 +3,7 @@ import math
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
-from numpy.random import choice
+import numpy as np
 
 class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
@@ -67,7 +67,8 @@ class LearningAgent(Agent):
         
         # Set 'state' as a tuple of relevant data for the agent        
         #state = (waypoint, inputs, deadline)
-        state = (waypoint, inputs['light'], inputs['left'], inputs['right'], inputs['oncoming'], deadline>10)
+        #state = (waypoint, inputs['light'], inputs['left'], inputs['right'], inputs['oncoming'], deadline>5)
+        state = (waypoint, inputs['light'], inputs['left']=='forward', inputs['oncoming'])
 
         return state
 
@@ -120,15 +121,22 @@ class LearningAgent(Agent):
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
         if self.learning == False:
-            action = random.choice(self.valid_actions)
-        elif self.learning == True:
-            #action = random.choice(self.valid_actions, 1, p=self.epsilon)
-            action = random.choice(self.valid_actions)
+            action = np.random.choice(self.valid_actions)
+        #elif self.learning == True:
         else:
-            import numpy as np
-            maxlist = self.Q[state].values
+            #action = random.choice(self.valid_actions)
+            #action = random.choice(self.valid_actions, 1, p=self.epsilon)
+            randomaction = np.random.choice(self.valid_actions)
+            """maxlist = self.Q[state].values
             actionlist = np.argwhere(maxlist == np.amax(maxlist))
-            action = random.choice(actionlist)
+            bestaction = np.random.choice(actionlist.flatten().tolist())"""
+            #bestaction = self.Q[state][np.argmax(self.Q[state].values)]
+            maxindex = np.argmax(self.Q[state].values)
+            bestaction = self.Q[state].keys()[maxindex]
+            action = np.random.choice([randomaction, bestaction], p=[self.epsilon, 1-self.epsilon])
+            #action = np.random.choice([randomaction, bestaction])
+            #action = np.random.choice(self.valid_actions)
+
         return action
 
 
@@ -142,6 +150,10 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
+        maxval = np.nanmax(self.Q[state].values())
+        #maxval = self.Q[state][action]
+        #self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (float(reward) + float(maxval))
+        self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (reward + maxval)
         return
 
 
