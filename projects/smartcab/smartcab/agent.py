@@ -68,7 +68,7 @@ class LearningAgent(Agent):
         # Set 'state' as a tuple of relevant data for the agent        
         #state = (waypoint, inputs, deadline)
         #state = (waypoint, inputs['light'], inputs['left'], inputs['right'], inputs['oncoming'], deadline>5)
-        state = (waypoint, inputs['light'], inputs['left']=='forward', inputs['oncoming'])
+        state = (waypoint, inputs['light'], inputs['left'], inputs['oncoming'])
 
         return state
 
@@ -152,8 +152,8 @@ class LearningAgent(Agent):
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         maxval = np.nanmax(self.Q[state].values())
         #maxval = self.Q[state][action]
-        #self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (float(reward) + float(maxval))
-        self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (reward + maxval)
+        #self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (reward + maxval)
+        self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (reward + 0 * maxval)
         return
 
 
