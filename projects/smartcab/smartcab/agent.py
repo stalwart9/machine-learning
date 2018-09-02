@@ -2,6 +2,7 @@ from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 import numpy as np
+import random
 
 class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
@@ -137,22 +138,37 @@ class LearningAgent(Agent):
         else:
             #action = random.choice(self.valid_actions)
             #action = random.choice(self.valid_actions, 1, p=self.epsilon)
-            randomaction = np.random.choice(self.valid_actions)
+            #randomaction = np.random.choice(self.valid_actions)
             """maxlist = self.Q[state].values
             actionlist = np.argwhere(maxlist == np.amax(maxlist))
             bestaction = np.random.choice(actionlist.flatten().tolist())"""
             #bestaction = self.Q[state][np.argmax(self.Q[state].values)]
             #TODO check for multiple max values
-            maxindex = np.argmax(self.Q[state].values)
-            bestaction = self.Q[state].keys()[maxindex]
+            #maxindex = np.argmax(self.Q[state].values)
+            #bestaction = self.Q[state].keys()[maxindex]
             
             #bestactions = [i for i, value in self.Q[state].items() if value == self.get_maxQ(state)] 
             #bestaction = np.random.choice(bestactions) 
 
-            action = np.random.choice([randomaction, bestaction], p=[self.epsilon, 1-self.epsilon])
+            #action = np.random.choice([randomaction, bestaction], p=[self.epsilon, 1-self.epsilon])
+            #print "trial=%d. action=%s" % (self.counter, action)
             #action = np.random.choice([randomaction, bestaction])
             #action = np.random.choice(self.valid_actions)
 
+            if random.random() < self.epsilon:
+                action = np.random.choice(self.valid_actions)
+            else:
+                maxvalue = max(self.Q[state].values())
+                bestactions = []
+                j = 0
+                for i in self.Q[state].values():
+                    if i == maxvalue:
+                        bestactions.append(self.Q[state].keys()[j])
+                    j += 1
+                print "bestactions=%s" %(bestactions)
+                action = np.random.choice(bestactions)
+            
+        print "trial=%d action=%s" % (self.counter, action)
         return action
 
 
