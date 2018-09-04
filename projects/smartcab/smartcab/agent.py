@@ -2,7 +2,7 @@ from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 import numpy as np
-import random
+import math
 
 class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
@@ -40,11 +40,13 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
-        self.counter = self.counter + 1
+        self.counter += 1
         
         self.epsilon = self.epsilon - 0.005
-        #self.epsilon = 1 / (self.counter * self.counter)
         #self.epsilon = self.alpha ** self.counter
+        #self.epsilon = 1 / (self.counter * self.counter)
+        #self.epsilon = math.exp(-1 * self.alpha * self.counter)
+        #self.epsilon = math.cos(self.alpha * self.counter)
         
         if testing == True:
             self.epsilon = 0
@@ -71,16 +73,8 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
         
         # Set 'state' as a tuple of relevant data for the agent        
-        #state = (waypoint, inputs, deadline)
         #state = (waypoint, inputs['light'], inputs['left'] == 'forward', inputs['right'], inputs['oncoming'], deadline>5)
-        #state = (waypoint, inputs['light'], inputs['left']=='forward', inputs['oncoming'])
         state = (waypoint, inputs['light'], inputs['left'], inputs['oncoming'])
-
-        """if self.learning: 
-            print  state 
-            if state not in self.Q.keys(): 
-                self.Q[state]={action:0.0 for action in self.valid_actions}"""
-  
 
         return state
 
@@ -136,39 +130,11 @@ class LearningAgent(Agent):
             action = np.random.choice(self.valid_actions)
         #elif self.learning == True:
         else:
-            #action = random.choice(self.valid_actions)
-            #action = random.choice(self.valid_actions, 1, p=self.epsilon)
-            #randomaction = np.random.choice(self.valid_actions)
-            """maxlist = self.Q[state].values
-            actionlist = np.argwhere(maxlist == np.amax(maxlist))
-            bestaction = np.random.choice(actionlist.flatten().tolist())"""
-            #bestaction = self.Q[state][np.argmax(self.Q[state].values)]
-            #TODO check for multiple max values
-            #maxindex = np.argmax(self.Q[state].values)
-            #bestaction = self.Q[state].keys()[maxindex]
-            
-            #bestactions = [i for i, value in self.Q[state].items() if value == self.get_maxQ(state)] 
-            #bestaction = np.random.choice(bestactions) 
-
-            #action = np.random.choice([randomaction, bestaction], p=[self.epsilon, 1-self.epsilon])
-            #print "trial=%d. action=%s" % (self.counter, action)
-            #action = np.random.choice([randomaction, bestaction])
-            #action = np.random.choice(self.valid_actions)
-
-            if random.random() < self.epsilon:
-                action = np.random.choice(self.valid_actions)
-            else:
-                maxvalue = max(self.Q[state].values())
-                bestactions = []
-                j = 0
-                for i in self.Q[state].values():
-                    if i == maxvalue:
-                        bestactions.append(self.Q[state].keys()[j])
-                    j += 1
-                print "bestactions=%s" %(bestactions)
-                action = np.random.choice(bestactions)
-            
-        print "trial=%d action=%s" % (self.counter, action)
+            randomaction = np.random.choice(self.valid_actions)
+            maxvalue = max(self.Q[state].values())
+            bestactions = [key for key, value in self.Q[state].items() if value == maxvalue] 
+            bestaction = np.random.choice(bestactions)
+            action = np.random.choice([randomaction, bestaction], p=[self.epsilon, 1-self.epsilon])            
         return action
 
 
@@ -183,8 +149,6 @@ class LearningAgent(Agent):
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         if self.learning==True:
-            #maxval = np.nanmax(self.Q[state].values())
-            #maxval = self.Q[state][action]
             #self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * (reward + 0 * maxval)
             self.Q[state][action] = ((1 - self.alpha) * self.Q[state][action]) + self.alpha * reward
         return
@@ -239,7 +203,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.001, log_metrics=True)
+    sim = Simulator(env, update_delay=0.000000001, log_metrics=True, optimized=True)
     #sim = Simulator(env, update_delay=0.001)
     #sim = Simulator(env)
     
